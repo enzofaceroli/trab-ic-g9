@@ -190,7 +190,7 @@ def find_best_move(
                 - current_distance
             )
 
-            if delta >= best_delta:
+            if delta >= best_delta - 0.0001:
                 continue
 
             for r in range(max_rooms):
@@ -245,7 +245,7 @@ def find_best_move(
                 - distances[candidate_rows[j], col_j]
             )
 
-            if delta < best_delta:
+            if delta < best_delta - 0.0001:
                 best_delta = delta
                 move_type = 1
                 move_i = i
