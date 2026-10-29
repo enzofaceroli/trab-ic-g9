@@ -1,0 +1,3 @@
+Instância | Distância inicial | Distância local search
+Instancia1_G1.txt | 24420.7947 | 22509.1174
+Instancia1_G10.txt | 6100.6050 | 4986.8441

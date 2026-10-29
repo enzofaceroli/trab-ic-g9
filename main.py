@@ -4,504 +4,674 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from numba import njit
 
 from utils.read_instances import load_instance
 
 
 INSTANCES_PATH = Path(__file__).resolve().parent / "instances"
 
-def initial_solution(candidates_df, schools_df, distances_df):
-    if candidates_df.empty:
-        return pd.DataFrame(
-            columns=[
-                "candidate_id",
-                "exam_type",
-                "school_id",
-                "classroom_id",
-                "distance",
-            ]
-        )
+def create_rooms_matrix(schools_df):
+    max_rooms = max(len(capacities) for capacities in schools_df["capacidades_salas"])
 
-    if schools_df.empty:
-        raise ValueError("Não existem escolas na instância.")
+    rooms_matrix = np.zeros((len(schools_df), max_rooms), dtype=int)
 
-    # Use row and column positions for distances.
-    # Candidate and school IDs are kept only for the solution.
-    distance_matrix = distances_df.to_numpy(dtype=float)
+    for i, capacities in enumerate(schools_df["capacidades_salas"]):
+        rooms_matrix[i, :len(capacities)] = capacities
 
-    if distance_matrix.shape != (len(candidates_df), len(schools_df)):
-        raise ValueError(
-            "Dimensões incompatíveis: "
-            f"distâncias={distance_matrix.shape}, "
-            f"candidatos={len(candidates_df)}, "
-            f"escolas={len(schools_df)}."
-        )
+    return rooms_matrix
 
-    if not np.isfinite(distance_matrix).all():
-        raise ValueError("A matriz de distâncias contém valores inválidos.")
+def get_closest_candidates(exam_type, school_id, room_capacity, candidates_df, distances_df, allocated_candidates):
+    candidates = candidates_df[
+        (candidates_df["tipo_prova"] == exam_type)
+        & (~candidates_df.index.isin(allocated_candidates))
+    ].index
 
-    candidate_ids = candidates_df.index.tolist()
-    school_ids = schools_df["id"].tolist()
+    column = str(school_id)
 
-    if not candidates_df.index.is_unique:
-        raise ValueError("Os índices dos candidatos devem ser únicos.")
-
-    if not schools_df["id"].is_unique:
-        raise ValueError("Os IDs das escolas devem ser únicos.")
-
-    # School capacities, preserving the original school order.
-    school_rooms = {}
-    school_capacity = {}
-
-    for _, row in schools_df.iterrows():
-        school_id = row["id"]
-        capacities = [int(c) for c in row["capacidades_salas"]]
-
-        if any(c < 0 for c in capacities):
-            raise ValueError(
-                f"Capacidade negativa encontrada na escola {school_id}."
-            )
-
-        school_rooms[school_id] = capacities
-        school_capacity[school_id] = sum(capacities)
-
-    # Candidate positions grouped by exam type.
-    candidates_by_type = {}
-
-    for pos, exam_type in enumerate(candidates_df["tipo_prova"].tolist()):
-        candidates_by_type.setdefault(exam_type, []).append(pos)
-
-    demand = {
-        exam_type: len(positions)
-        for exam_type, positions in candidates_by_type.items()
-    }
-
-    # Process the largest demands first.
-    exam_types = tuple(
-        sorted(demand, key=lambda t: demand[t], reverse=True)
+    return (
+        distances_df.loc[candidates, column]
+        .sort_values()
+        .head(room_capacity)
+        .index
+        .tolist()
     )
 
-    school_positions = {
-        school_id: pos
-        for pos, school_id in enumerate(school_ids)
-    }
-
-    # Mean distance from each exam type to each school.
-    mean_distance = {}
-
-    for exam_type, positions in candidates_by_type.items():
-        for school_id in school_ids:
-            school_pos = school_positions[school_id]
-
-            mean_distance[exam_type, school_id] = float(
-                distance_matrix[positions, school_pos].mean()
-            )
-
-    # Search for a feasible disjoint assignment of schools to exam types.
-    # This version dedicates each school to at most one exam type.
-    @lru_cache(maxsize=None)
-    def assign_schools(i, available):
-        if i == len(exam_types):
-            return ()
-
-        exam_type = exam_types[i]
-        required = demand[exam_type]
-        options = []
-
-        for size in range(1, len(available) + 1):
-            for subset in combinations(available, size):
-                capacity = sum(school_capacity[s] for s in subset)
-
-                if capacity < required:
-                    continue
-
-                proximity = sum(
-                    mean_distance[exam_type, s]
-                    for s in subset
-                )
-
-                options.append(
-                    (
-                        capacity - required,
-                        proximity,
-                        size,
-                        subset,
-                    )
-                )
-
-        options.sort()
-
-        for _, _, _, subset in options:
-            selected = set(subset)
-            remaining = tuple(
-                school_id
-                for school_id in available
-                if school_id not in selected
-            )
-
-            result = assign_schools(i + 1, remaining)
-
-            if result is not None:
-                return ((exam_type, subset),) + result
-
-        return None
-
-    school_assignment = assign_schools(0, tuple(school_ids))
-
-    if school_assignment is None:
-        return None
-
-    schools_by_type = {
-        exam_type: list(selected_schools)
-        for exam_type, selected_schools in school_assignment
-    }
-
-    # Assign each candidate to a school of the corresponding exam type.
-    candidate_school = {}
-    remaining_capacity = school_capacity.copy()
-
-    for exam_type in exam_types:
-        positions = candidates_by_type[exam_type]
-        eligible_schools = schools_by_type[exam_type]
-
-        pairs = sorted(
-            (
-                (
-                    distance_matrix[
-                        candidate_pos,
-                        school_positions[school_id],
-                    ],
-                    candidate_pos,
-                    school_id,
-                )
-                for candidate_pos in positions
-                for school_id in eligible_schools
-            ),
-            key=lambda item: (item[0], item[1]),
+def initial_solution(candidates_df, schools_df, distances_df):
+    allocated_candidates = set()
+    allocation = []
+    total_distance = 0
+    
+    rooms_matrix = create_rooms_matrix(schools_df)
+    
+    # print(rooms_matrix)
+    
+    ordered_distances = sorted(
+        (
+            (candidate_id, school_id, distance)
+            for candidate_id, row in distances_df.iterrows()
+            for school_id, distance in row.items()
+        ),
+        key=lambda x: x[2]
+    )
+    
+    for candidate_id, school_id, distance in ordered_distances:
+        if candidate_id in allocated_candidates:
+            continue 
+        
+        school_idx = int(school_id) - 1
+        exam_type = candidates_df.loc[candidate_id, "tipo_prova"]
+        room_id = next(
+            (i for i, capacity in enumerate(rooms_matrix[school_idx]) if capacity > 0),
+            None
         )
-
-        for distance, candidate_pos, school_id in pairs:
-            if candidate_pos in candidate_school:
-                continue
-
-            if remaining_capacity[school_id] <= 0:
-                continue
-
-            candidate_school[candidate_pos] = (
-                school_id,
-                float(distance),
-            )
-            remaining_capacity[school_id] -= 1
-
-        unallocated = [
-            pos for pos in positions
-            if pos not in candidate_school
-        ]
-
-        if unallocated:
-            raise RuntimeError(
-                f"Não foi possível alocar {len(unallocated)} candidatos "
-                f"da prova {exam_type}."
-            )
-
-    # Assign candidates to individual rooms.
-    allocations = []
-
-    for school_id in school_ids:
-        school_candidates = [
-            (pos, *candidate_school[pos])
-            for pos in range(len(candidates_df))
-            if candidate_school[pos][0] == school_id
-        ]
-
-        if not school_candidates:
+        
+        if room_id is None:
             continue
-
-        school_candidates.sort(key=lambda item: item[2])
-        position = 0
-
-        for room_id, capacity in enumerate(
-            school_rooms[school_id], start=1
-        ):
-            room_candidates = school_candidates[
-                position:position + capacity
-            ]
-
-            for candidate_pos, _, distance in room_candidates:
-                allocations.append({
-                    "candidate_id": candidate_ids[candidate_pos],
-                    "exam_type": candidates_df.iloc[
-                        candidate_pos
-                    ]["tipo_prova"],
-                    "school_id": school_id,
-                    "classroom_id": room_id,
-                    "distance": distance,
-                })
-
-            position += capacity
-
-        if position < len(school_candidates):
-            raise RuntimeError(
-                f"A capacidade das salas da escola {school_id} "
-                "não comporta os candidatos atribuídos."
-            )
-
-    allocation_df = pd.DataFrame(allocations)
-
-    # Final consistency checks.
-    if len(allocation_df) != len(candidates_df):
-        raise RuntimeError(
-            f"Foram alocados {len(allocation_df)} de "
-            f"{len(candidates_df)} candidatos."
+        
+        allocated_candidates.add(candidate_id)
+        allocation.append({
+            "candidate_id": candidate_id,
+            "school_id": school_id,
+            "room_id": room_id
+        })
+        total_distance += distance
+        room_capacity = rooms_matrix[school_idx][room_id] - 1
+ 
+        closest_candidates = get_closest_candidates(
+            exam_type,
+            school_id,
+            room_capacity,
+            candidates_df,
+            distances_df,
+            allocated_candidates
         )
+        
+        for candidate in closest_candidates:
+            allocated_candidates.add(candidate)
+            allocation.append({
+                "candidate_id": candidate,
+                "school_id": school_id,
+                "room_id": room_id
+            })
+            total_distance += distances_df.loc[candidate][school_id]
+            
+        rooms_matrix[school_idx][room_id] = 0
+        
+    if len(allocated_candidates) != len(candidates_df):
+        print(f"No valid solution found. {len(allocated_candidates)}/{len(candidates_df)} candidates allocated. Total Distance: {total_distance}\n")
+        # unallocated = candidates_df.loc[
+        #     ~candidates_df.index.isin(allocated_candidates)
+        # ]
 
-    if allocation_df["candidate_id"].duplicated().any():
-        raise RuntimeError("Há candidatos alocados mais de uma vez.")
+        # print(f"Não alocados: {len(unallocated)}")
+        # print("Diagnóstico:")
 
-    room_occupancy = allocation_df.groupby(
-        ["school_id", "classroom_id"]
-    ).size()
+        # print("\nCandidatos não alocados por tipo de prova:")
+        # print(unallocated["tipo_prova"].value_counts().to_string())
 
-    for (school_id, room_id), occupancy in room_occupancy.items():
-        capacity = school_rooms[school_id][room_id - 1]
+        # print("\nCandidatos não alocados:")
+        # print(f"{unallocated.to_string()}\n")
+        
+        # allocation_df = pd.DataFrame(
+        #     allocation,
+        #     columns=["candidate_id", "school_id", "room_id"]
+        # ).merge(
+        #     candidates_df[["tipo_prova"]],
+        #     left_on="candidate_id",
+        #     right_index=True
+        # )
 
-        if occupancy > capacity:
-            raise RuntimeError(
-                f"A sala {room_id} da escola {school_id} "
-                "ultrapassou sua capacidade."
-            )
+        # print("\nOcupação das salas:")
+        # for (school_id, room_id, exam_type), count in allocation_df.groupby(
+        #     ["school_id", "room_id", "tipo_prova"]
+        # ).size().items():
+        #     capacity = schools_df.iloc[int(school_id) - 1]["capacidades_salas"][room_id]
+        #     print(
+        #         f"Escola {school_id}, sala {room_id}: "
+        #         f"{exam_type}, {count}/{capacity} candidatos"
+        #     )
 
+        # print("\nResumo por escola, sala e tipo de prova:")
+        # print(
+        #     allocation_df.groupby(
+        #         ["school_id", "room_id", "tipo_prova"]
+        #     ).size().to_string()
+        # )
+
+        return None
+    
+    allocation_df = pd.DataFrame(allocation)
+    print(f"Total distance: {total_distance}")
     return allocation_df
 
-def local_search(initial_solution, distances_df, schools_df):
-    import numpy as np
 
-    allocation = initial_solution.copy().reset_index(drop=True)
+import numpy as np
+from numba import njit
 
-    school_ids = schools_df["id"].tolist()
-    n = len(allocation)
 
-    room_capacities = {
-        row["id"]: np.asarray(row["capacidades_salas"], dtype=int)
-        for _, row in schools_df.iterrows()
-    }
-    school_capacity = {
-        school: capacities.sum()
-        for school, capacities in room_capacities.items()
-    }
+@njit
+def find_best_move(
+    candidate_rows,
+    allocation_types,
+    school_indices,
+    room_ids,
+    distance_cols,
+    distances,
+    capacities,
+    school_col_by_index,
+    counts,
+    room_types,
+):
+    n = len(candidate_rows)
+    num_schools, max_rooms = capacities.shape
 
-    school_columns = {}
-    for school in school_ids:
-        column = school if school in distances_df.columns else str(school)[1:]
-        if column not in distances_df.columns:
-            column = int(column)
+    best_delta = 0.0
+    move_type = -1
+    move_i = -1
+    move_arg = -1
+    move_room = -1
 
-        if column not in distances_df.columns:
-            raise ValueError(f"Coluna de distância não encontrada: {school}")
+    # Movimento 1: transferências
+    for i in range(n):
+        source_school = school_indices[i]
+        source_col = distance_cols[i]
+        exam_type = allocation_types[i]
+        current_distance = distances[candidate_rows[i], source_col]
 
-        school_columns[school] = distances_df.columns.get_loc(column)
+        for s in range(num_schools):
+            if s == source_school:
+                continue
 
-    candidate_positions = {
-        candidate_id: pos
-        for pos, candidate_id in enumerate(distances_df.index)
-    }
+            target_col = school_col_by_index[s]
 
-    candidate_ids = allocation["candidate_id"].to_numpy()
-    exam_types = allocation["exam_type"].to_numpy()
-    assigned_schools = allocation["school_id"].to_numpy(dtype=object)
-    classrooms = allocation["classroom_id"].to_numpy(copy=True)
+            delta = (
+                distances[candidate_rows[i], target_col]
+                - current_distance
+            )
 
-    candidate_rows = np.array([
-        candidate_positions.get(
-            candidate_id,
-            int(candidate_id) if isinstance(candidate_id, (int, np.integer)) else -1
-        )
-        for candidate_id in candidate_ids
-    ])
+            if delta >= best_delta:
+                continue
 
-    if np.any(candidate_rows < 0) or np.any(candidate_rows >= len(distances_df)):
-        raise ValueError("Não foi possível mapear todos os candidatos à matriz de distâncias.")
+            for r in range(max_rooms):
+                count = counts[s, r]
 
-    distance_matrix = distances_df.to_numpy(dtype=float)
-    school_col = {s: school_columns[s] for s in school_ids}
-    school_col_array = np.array([school_col[s] for s in school_ids])
-    school_index = {s: i for i, s in enumerate(school_ids)}
+                if count == 0:
+                    continue
 
-    school_counts = {
-        s: int(np.count_nonzero(assigned_schools == s))
-        for s in school_ids
-    }
+                if count >= capacities[s, r]:
+                    continue
 
-    school_types = {
-        s: (exam_types[np.flatnonzero(assigned_schools == s)[0]]
-            if school_counts[s] else None)
-        for s in school_ids
-    }
+                if room_types[s, r] != exam_type:
+                    continue
 
-    distances = np.array([
-        distance_matrix[candidate_rows[i], school_col[assigned_schools[i]]]
-        for i in range(n)
-    ])
+                best_delta = delta
+                move_type = 0
+                move_i = i
+                move_arg = s
+                move_room = r
 
-    def update_rooms(school):
-        positions = np.flatnonzero(assigned_schools == school)
-        capacities = room_capacities[school]
+    # Movimento 2: trocas
+    for i in range(n - 1):
+        school_i = school_indices[i]
+        room_i = room_ids[i]
+        type_i = allocation_types[i]
+        col_i = distance_cols[i]
+        count_i = counts[school_i, room_i]
 
-        if len(positions) > capacities.sum():
-            raise RuntimeError(f"Capacidade excedida na escola {school}.")
+        for j in range(i + 1, n):
+            school_j = school_indices[j]
 
-        offset = 0
-        for room_id, capacity in enumerate(capacities, start=1):
-            end = min(offset + capacity, len(positions))
-            classrooms[positions[offset:end]] = room_id
-            offset = end
+            if school_i == school_j:
+                continue
 
-    initial_distance = distances.sum()
+            room_j = room_ids[j]
+            type_j = allocation_types[j]
+            col_j = distance_cols[j]
+            count_j = counts[school_j, room_j]
+
+            # O candidato j precisa caber no cômodo i.
+            if count_i > 1 and room_types[school_i, room_i] != type_j:
+                continue
+
+            # O candidato i precisa caber no cômodo j.
+            if count_j > 1 and room_types[school_j, room_j] != type_i:
+                continue
+
+            delta = (
+                distances[candidate_rows[i], col_j]
+                + distances[candidate_rows[j], col_i]
+                - distances[candidate_rows[i], col_i]
+                - distances[candidate_rows[j], col_j]
+            )
+
+            if delta < best_delta:
+                best_delta = delta
+                move_type = 1
+                move_i = i
+                move_arg = j
+                move_room = -1
+
+    return best_delta, move_type, move_i, move_arg, move_room
+
+
+def local_search(allocation_df, candidates_df, schools_df, distances_df):
+    allocation_df = allocation_df.copy().reset_index(drop=True)
+
+    candidate_ids = allocation_df["candidate_id"].to_numpy()
+    school_ids = allocation_df["school_id"].to_numpy(copy=True)
+    room_ids = allocation_df["room_id"].to_numpy(dtype=np.int64, copy=True)
+
+    candidate_pos = {cid: i for i, cid in enumerate(candidates_df.index)}
+    school_pos = {str(sid): i for i, sid in enumerate(distances_df.columns)}
+
+    candidate_rows = np.array(
+        [candidate_pos[cid] for cid in candidate_ids],
+        dtype=np.int64,
+    )
+
+    type_codes, _ = __import__("pandas").factorize(
+        candidates_df["tipo_prova"], sort=True
+    )
+    allocation_types = type_codes[candidate_rows].astype(np.int64)
+
+    distances = distances_df.to_numpy(dtype=np.float64)
+
+    distance_cols = np.array(
+        [school_pos[str(sid)] for sid in school_ids],
+        dtype=np.int64,
+    )
+
+    school_indices = np.array(
+        [int(sid) - 1 for sid in school_ids],
+        dtype=np.int64,
+    )
+
+    capacity_lists = [
+        np.asarray(school["capacidades_salas"], dtype=np.int64)
+        for _, school in schools_df.iterrows()
+    ]
+
+    max_rooms = max(len(c) for c in capacity_lists)
+    capacities = np.zeros(
+        (len(capacity_lists), max_rooms),
+        dtype=np.int64,
+    )
+
+    for s, cap in enumerate(capacity_lists):
+        capacities[s, :len(cap)] = cap
+
+    # Mapeia cada escola (índice zero-based) para a coluna de distâncias.
+    school_col_by_index = np.array(
+        [school_pos[str(s + 1)] for s in range(len(capacity_lists))],
+        dtype=np.int64,
+    )
+
+    n = len(candidate_ids)
+
+    def build_room_state():
+        counts = np.zeros_like(capacities)
+        room_types = np.full(capacities.shape, -1, dtype=np.int64)
+
+        for i in range(n):
+            s = school_indices[i]
+            r = room_ids[i]
+
+            counts[s, r] += 1
+            room_types[s, r] = allocation_types[i]
+
+        return counts, room_types
+
+    best_distance = distances[candidate_rows, distance_cols].sum()
     iteration = 0
 
     while True:
         iteration += 1
-        improved = False
 
-        # Relocate: apply the first improving move.
-        for i in range(n):
-            current_school = assigned_schools[i]
-            exam_type = exam_types[i]
-            current_distance = distances[i]
-            candidate_row = candidate_rows[i]
-
-            for new_school in school_ids:
-                if new_school == current_school:
-                    continue
-
-                if school_types[new_school] is not None and school_types[new_school] != exam_type:
-                    continue
-
-                if school_counts[new_school] >= school_capacity[new_school]:
-                    continue
-
-                new_distance = distance_matrix[
-                    candidate_row, school_col[new_school]
-                ]
-
-                if new_distance < current_distance:
-                    assigned_schools[i] = new_school
-                    distances[i] = new_distance
-
-                    school_counts[current_school] -= 1
-                    school_counts[new_school] += 1
-
-                    if school_counts[current_school] == 0:
-                        school_types[current_school] = None
-                    school_types[new_school] = exam_type
-
-                    update_rooms(current_school)
-                    update_rooms(new_school)
-
-                    improved = True
-                    break
-
-            if improved:
-                break
-
-        if improved:
-            if iteration % 10 == 0:
-                print(f"Iteração {iteration} | Distância: {distances.sum():.2f}")
-            continue
-
-        # Swap: vectorize comparisons for each first candidate.
-        for i in range(n):
-            eligible = (
-                (np.arange(n) > i)
-                & (exam_types == exam_types[i])
-                & (assigned_schools != assigned_schools[i])
-            )
-            js = np.flatnonzero(eligible)
-
-            if len(js) == 0:
-                continue
-
-            school_a = assigned_schools[i]
-            rows_j = candidate_rows[js]
-            cols_j = np.array([school_col[s] for s in assigned_schools[js]])
-
-            new_distance_i = distance_matrix[candidate_rows[i], cols_j]
-            new_distance_j = distance_matrix[rows_j, school_col[school_a]]
-
-            deltas = new_distance_i + new_distance_j - distances[i] - distances[js]
-            improving = np.flatnonzero(deltas < 0)
-
-            if len(improving) == 0:
-                continue
-
-            k = improving[0]
-            j = js[k]
-            school_b = assigned_schools[j]
-
-            assigned_schools[i], assigned_schools[j] = school_b, school_a
-            distances[i] = new_distance_i[k]
-            distances[j] = new_distance_j[k]
-
-            # Counts and school types do not change in a same-type swap.
-            improved = True
-            break
-
-        if not improved:
-            break
-
-        if iteration % 10 == 0:
-            print(f"Iteração {iteration} | Distância: {distances.sum():.2f}")
-
-    allocation["school_id"] = assigned_schools
-    allocation["distance"] = distances
-    allocation["classroom_id"] = classrooms
-
-    final_distance = distances.sum()
-
-    print(f"Distância inicial: {initial_distance:.2f}")
-    print(f"Distância final: {final_distance:.2f}")
-    print(f"Redução: {initial_distance - final_distance:.2f}")
-
-    return allocation
-
-def main():
-    for file in sorted(INSTANCES_PATH.glob("*.txt")):
-        (
-            num_candidates,
-            num_schools,
-            candidates_df,
-            schools_df,
-            distances_df,
-        ) = load_instance(file)
-
-        allocation_df = initial_solution(
-            candidates_df,
-            schools_df,
-            distances_df,
+        print(
+            f"Iteração {iteration} | "
+            f"Distância atual: {best_distance:.4f}"
         )
-        
-        if allocation_df is None:
-            print("Não foi encontrada solução viável para K=1")
-        
+
+        counts, room_types = build_room_state()
+
+        (
+            best_delta,
+            move_type,
+            move_i,
+            move_arg,
+            move_room,
+        ) = find_best_move(
+            candidate_rows,
+            allocation_types,
+            school_indices,
+            room_ids,
+            distance_cols,
+            distances,
+            capacities,
+            school_col_by_index,
+            counts,
+            room_types,
+        )
+
+        if move_type == -1:
+            print("Nenhuma melhoria encontrada.")
+            break
+
+        if move_type == 0:
+            # Transferência para um cômodo ocupado de outra escola.
+            i = move_i
+            target_school = move_arg
+            target_room = move_room
+
+            school_indices[i] = target_school
+            school_ids[i] = target_school + 1
+            room_ids[i] = target_room
+            distance_cols[i] = school_col_by_index[target_school]
+
         else:
-            total_distance = allocation_df["distance"].sum()
+            # Troca das escolas e dos cômodos entre dois candidatos.
+            i = move_i
+            j = move_arg
 
-            print(
-                f"{file.name}: \n"
-                f"{len(allocation_df)}/{num_candidates} candidatos alocados\n"
-                f"Distância total: {total_distance}\n"
+            school_indices[i], school_indices[j] = (
+                school_indices[j],
+                school_indices[i],
             )
-        
-        # allocation_df = local_search(allocation_df, distances_df, schools_df)
-        
-        # total_distance = allocation_df["distance"].sum()
+            school_ids[i], school_ids[j] = (
+                school_ids[j],
+                school_ids[i],
+            )
+            room_ids[i], room_ids[j] = room_ids[j], room_ids[i]
+            distance_cols[i], distance_cols[j] = (
+                distance_cols[j],
+                distance_cols[i],
+            )
 
-        # print(
-        #     f"APÓS LOCAL SEARCH\n"
-        #     f"{file.name}: \n"
-        #     f"{len(allocation_df)}/{num_candidates} candidatos alocados\n"
-        #     f"Distância total: {total_distance}\n"
-        # )
-        
+        best_distance += best_delta
+        print(f"Melhoria: {-best_delta:.4f}")
+
+    allocation_df["school_id"] = school_ids
+    allocation_df["room_id"] = room_ids
+
+    actual_distance = distances[candidate_rows, distance_cols].sum()
+    print(f"Distância final: {actual_distance:.4f}")
+
+    return allocation_df
+
+
+# def local_search(allocation_df, candidates_df, schools_df, distances_df):
+#     allocation_df = allocation_df.copy().reset_index(drop=True)
+
+#     candidate_ids = allocation_df["candidate_id"].to_numpy()
+#     school_ids = allocation_df["school_id"].to_numpy(copy=True)
+#     room_ids = allocation_df["room_id"].to_numpy(dtype=int, copy=True)
+
+#     candidate_pos = {cid: i for i, cid in enumerate(candidates_df.index)}
+#     school_pos = {str(sid): i for i, sid in enumerate(distances_df.columns)}
+
+#     candidate_rows = np.array(
+#         [candidate_pos[cid] for cid in candidate_ids], dtype=int
+#     )
+#     allocation_types = candidates_df["tipo_prova"].to_numpy()[
+#         candidate_rows
+#     ]
+
+#     distances = distances_df.to_numpy(dtype=float)
+#     distance_cols = np.array(
+#         [school_pos[str(sid)] for sid in school_ids], dtype=int
+#     )
+#     school_indices = np.array(
+#         [int(sid) - 1 for sid in school_ids], dtype=int
+#     )
+
+#     capacities = [
+#         np.asarray(school["capacidades_salas"], dtype=int)
+#         for _, school in schools_df.iterrows()
+#     ]
+
+#     n = len(candidate_ids)
+
+#     counts = {}
+#     types = {}
+
+#     for i in range(n):
+#         key = (school_indices[i], room_ids[i])
+#         counts[key] = counts.get(key, 0) + 1
+#         types[key] = allocation_types[i]
+
+#     def objective():
+#         return distances[candidate_rows, distance_cols].sum()
+
+#     def can_enter(school, room, exam_type):
+#         key = (school, room)
+
+#         if room < 0 or room >= len(capacities[school]):
+#             return False
+
+#         if counts.get(key, 0) >= capacities[school][room]:
+#             return False
+
+#         return counts.get(key, 0) == 0 or types[key] == exam_type
+
+#     def remove_candidate(i):
+#         key = (school_indices[i], room_ids[i])
+#         counts[key] -= 1
+
+#         if counts[key] == 0:
+#             del counts[key]
+#             del types[key]
+
+#     def add_candidate(i, school, room):
+#         key = (school, room)
+
+#         if counts.get(key, 0) == 0:
+#             types[key] = allocation_types[i]
+
+#         counts[key] = counts.get(key, 0) + 1
+
+#     best_distance = objective()
+#     iteration = 0
+
+#     while True:
+#         iteration += 1
+#         move_found = False
+
+#         print(f"Iteração {iteration} | Distância atual: {best_distance:.4f}")
+
+#         occupied_rooms = list(counts.keys())
+
+#         # Movimento 1: transferências
+#         for i in range(n):
+#             source_school = school_indices[i]
+#             exam_type = allocation_types[i]
+#             current_col = distance_cols[i]
+
+#             for target_school, target_room in occupied_rooms:
+#                 if target_school == source_school:
+#                     continue
+
+#                 if not can_enter(target_school, target_room, exam_type):
+#                     continue
+
+#                 target_col = school_pos[str(target_school + 1)]
+#                 delta = (
+#                     distances[candidate_rows[i], target_col]
+#                     - distances[candidate_rows[i], current_col]
+#                 )
+
+#                 if delta < 0:
+#                     remove_candidate(i)
+
+#                     school_indices[i] = target_school
+#                     school_ids[i] = target_school + 1
+#                     room_ids[i] = target_room
+#                     distance_cols[i] = target_col
+
+#                     add_candidate(i, target_school, target_room)
+
+#                     best_distance += delta
+#                     move_found = True
+#                     print(f"Melhoria: {-delta:.4f}")
+#                     break
+
+#             if move_found:
+#                 break
+
+#         if move_found:
+#             continue
+
+#         # Movimento 2: trocas vetorizadas
+#         for i in range(n):
+#             school_i = school_indices[i]
+#             room_i = room_ids[i]
+#             type_i = allocation_types[i]
+#             col_i = distance_cols[i]
+
+#             candidates_j = np.flatnonzero(
+#                 (school_indices != school_i)
+#                 & (np.arange(n) > i)
+#             )
+
+#             if len(candidates_j) == 0:
+#                 continue
+
+#             schools_j = school_indices[candidates_j]
+#             rooms_j = room_ids[candidates_j]
+#             types_j = allocation_types[candidates_j]
+#             cols_j = distance_cols[candidates_j]
+
+#             key_i = (school_i, room_i)
+#             count_i = counts[key_i]
+
+#             valid = np.ones(len(candidates_j), dtype=bool)
+
+#             # Compatibilidade de tipo após a troca
+#             if count_i > 1:
+#                 valid &= types_j == types[key_i]
+
+#             # A sala de j precisa aceitar o candidato i
+#             for k, j in enumerate(candidates_j):
+#                 key_j = (schools_j[k], rooms_j[k])
+
+#                 if counts[key_j] > 1 and type_i != types[key_j]:
+#                     valid[k] = False
+
+#             if not valid.any():
+#                 continue
+
+#             # Delta de todas as trocas candidatas em uma operação NumPy
+#             deltas = (
+#                 distances[candidate_rows[i], cols_j]
+#                 + distances[candidate_rows[candidates_j], col_i]
+#                 - distances[candidate_rows[i], col_i]
+#                 - distances[candidate_rows[candidates_j], cols_j]
+#             )
+
+#             deltas[~valid] = np.inf
+#             improving = np.flatnonzero(deltas < 0)
+
+#             if len(improving) == 0:
+#                 continue
+
+#             # First improvement: primeiro candidato válido que melhora
+#             k = improving[0]
+#             j = candidates_j[k]
+#             delta = deltas[k]
+
+#             key_i = (school_i, room_i)
+#             key_j = (school_indices[j], room_ids[j])
+
+#             # Atualiza as contagens das duas salas
+#             counts[key_i] -= 1
+#             counts[key_j] -= 1
+
+#             if counts[key_i] == 0:
+#                 del counts[key_i]
+#                 del types[key_i]
+
+#             if counts.get(key_j, 0) == 0:
+#                 counts.pop(key_j, None)
+#                 types.pop(key_j, None)
+
+#             school_indices[i], school_indices[j] = (
+#                 school_indices[j], school_indices[i]
+#             )
+#             school_ids[i], school_ids[j] = (
+#                 school_ids[j], school_ids[i]
+#             )
+#             room_ids[i], room_ids[j] = room_ids[j], room_ids[i]
+#             distance_cols[i], distance_cols[j] = (
+#                 distance_cols[j], distance_cols[i]
+#             )
+
+#             # Registra os candidatos nas novas salas
+#             add_candidate(i, school_indices[i], room_ids[i])
+#             add_candidate(j, school_indices[j], room_ids[j])
+
+#             best_distance += delta
+#             move_found = True
+#             print(f"Melhoria: {-delta:.4f}")
+#             break
+
+#         if not move_found:
+#             print("Nenhuma melhoria encontrada.")
+#             break
+
+#     allocation_df["school_id"] = school_ids
+#     allocation_df["room_id"] = room_ids
+
+#     print(f"Distância final: {best_distance:.4f}")
+
+#     return allocation_df
+            
+def total_distance(allocation_df, distances_df):
+    return sum(
+        distances_df.loc[row.candidate_id, str(row.school_id)]
+        for row in allocation_df.itertuples()
+    )         
+    
+def main():
+    with open("results.txt", "w", encoding="utf-8") as log:
+        log.write("Instância | Distância inicial | Distância local search\n")
+
+        for file in sorted(INSTANCES_PATH.glob("*.txt")):
+            (
+                num_candidates,
+                num_schools,
+                candidates_df,
+                schools_df,
+                distances_df,
+            ) = load_instance(file)
+
+            allocation_df = initial_solution(
+                candidates_df, schools_df, distances_df
+            )
+
+            if allocation_df is not None:
+                initial_distance = total_distance(
+                    allocation_df, distances_df
+                )
+
+                local_search_df = local_search(
+                    allocation_df, candidates_df, schools_df, distances_df
+                )
+
+                local_search_distance = total_distance(
+                    local_search_df, distances_df
+                )
+
+                log.write(
+                    f"{file.name} | {initial_distance:.4f} | "
+                    f"{local_search_distance:.4f}\n"
+                )
+                log.flush()
+
+                print(
+                    f"{file.name}: inicial = {initial_distance:.4f} | "
+                    f"local search = {local_search_distance:.4f}"
+                )
+                
+                    
 if __name__ == "__main__":
     main()
