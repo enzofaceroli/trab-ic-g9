@@ -106,11 +106,6 @@ def initial_solution(candidates_df, schools_df, distances_df):
     print(f"Total distance: {total_distance}")
     return allocation_df
 
-
-import numpy as np
-from numba import njit
-
-
 @njit
 def find_best_move(
     candidate_rows,
