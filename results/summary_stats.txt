@@ -1,0 +1,23 @@
+Número de instâncias: 28
+
+                                 Média  Desvio padrão
+num_candidates                 3261.75        2040.16
+num_schools                      13.43           3.36
+num_rooms                       109.71          64.41
+num_exam_types                    6.00           0.00
+total_capacity                 3647.18        2229.29
+capacity_surplus                385.43         298.33
+capacity_surplus_ratio            0.12           0.06
+mean_room_capacity               30.59          16.49
+min_room_capacity                15.71           8.24
+max_room_capacity                59.79          46.45
+largest_exam_demand             810.64         595.72
+smallest_exam_demand            363.00         299.36
+mean_distance                     7.95           6.15
+median_distance                   7.64           6.48
+std_distance                      3.94           2.51
+min_distance                      0.93           3.20
+max_distance                     21.41          15.56
+mean_nearest_school_distance      3.16           4.30
+median_nearest_school_distance    3.04           4.60
+max_nearest_school_distance       9.83          12.93

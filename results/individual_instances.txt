@@ -1,0 +1,700 @@
+
+========================================
+Instancia1_G1.txt
+========================================
+num_candidates: 4518
+num_schools: 15
+num_rooms: 125
+num_exam_types: 6
+total_capacity: 4830
+capacity_surplus: 312
+capacity_surplus_ratio: 0.06905710491367861
+mean_room_capacity: 38.64
+min_room_capacity: 20
+max_room_capacity: 55
+candidates_per_exam: {'M1': 1433, 'M2': 1798, 'M3d': 371, 'M3e': 370, 'M3h': 244, 'M3s': 302}
+largest_exam_demand: 1798
+smallest_exam_demand: 244
+mean_distance: 8.54409367419212
+median_distance: 8.3771
+std_distance: 4.024814852574412
+min_distance: 0.0376
+max_distance: 20.4986
+mean_nearest_school_distance: 1.3504928729526338
+median_nearest_school_distance: 1.2306
+max_nearest_school_distance: 4.8111
+
+========================================
+Instancia1_G10.txt
+========================================
+num_candidates: 4744
+num_schools: 15
+num_rooms: 101
+num_exam_types: 6
+total_capacity: 5224
+capacity_surplus: 480
+capacity_surplus_ratio: 0.10118043844856661
+mean_room_capacity: 51.722772277227726
+min_room_capacity: 17
+max_room_capacity: 119
+candidates_per_exam: {'M1': 817, 'M2': 660, 'M3d': 881, 'M3e': 647, 'M3h': 894, 'M3s': 845}
+largest_exam_demand: 894
+smallest_exam_demand: 647
+mean_distance: 4.080092282181
+median_distance: 3.8739999999999997
+std_distance: 2.4092776140373333
+min_distance: 0.0046
+max_distance: 12.7851
+mean_nearest_school_distance: 0.7783084949409781
+median_nearest_school_distance: 0.5047
+max_nearest_school_distance: 2.5621
+
+========================================
+Instancia1_G11.txt
+========================================
+num_candidates: 3452
+num_schools: 10
+num_rooms: 88
+num_exam_types: 6
+total_capacity: 3990
+capacity_surplus: 538
+capacity_surplus_ratio: 0.15585168018539977
+mean_room_capacity: 45.34090909090909
+min_room_capacity: 30
+max_room_capacity: 60
+candidates_per_exam: {'M1': 1182, 'M2': 1154, 'M3d': 97, 'M3e': 327, 'M3h': 333, 'M3s': 359}
+largest_exam_demand: 1182
+smallest_exam_demand: 97
+mean_distance: 15.308316144264197
+median_distance: 15.26215
+std_distance: 7.226595377308769
+min_distance: 0.0183
+max_distance: 36.1863
+mean_nearest_school_distance: 4.6766320973348785
+median_nearest_school_distance: 4.3607499999999995
+max_nearest_school_distance: 13.2673
+
+========================================
+Instancia1_G12.txt
+========================================
+num_candidates: 3860
+num_schools: 15
+num_rooms: 205
+num_exam_types: 6
+total_capacity: 4485
+capacity_surplus: 625
+capacity_surplus_ratio: 0.16191709844559585
+mean_room_capacity: 21.878048780487806
+min_room_capacity: 15
+max_room_capacity: 45
+candidates_per_exam: {'M1': 1112, 'M2': 492, 'M3d': 669, 'M3e': 751, 'M3h': 432, 'M3s': 404}
+largest_exam_demand: 1112
+smallest_exam_demand: 404
+mean_distance: 8.2387151208981
+median_distance: 7.90845
+std_distance: 4.096042466953758
+min_distance: 0.0536
+max_distance: 23.1461
+mean_nearest_school_distance: 2.9094247409326424
+median_nearest_school_distance: 2.2790999999999997
+max_nearest_school_distance: 9.7146
+
+========================================
+Instancia1_G2.txt
+========================================
+num_candidates: 100
+num_schools: 5
+num_rooms: 20
+num_exam_types: 6
+total_capacity: 105
+capacity_surplus: 5
+capacity_surplus_ratio: 0.05
+mean_room_capacity: 5.25
+min_room_capacity: 5
+max_room_capacity: 6
+candidates_per_exam: {'M1': 17, 'M2': 17, 'M3d': 17, 'M3e': 17, 'M3h': 16, 'M3s': 16}
+largest_exam_demand: 17
+smallest_exam_demand: 16
+mean_distance: 9.3396184
+median_distance: 9.16405
+std_distance: 2.705254400795134
+min_distance: 4.1203
+max_distance: 17.0063
+mean_nearest_school_distance: 7.891157000000001
+median_nearest_school_distance: 7.6610499999999995
+max_nearest_school_distance: 12.67
+
+========================================
+Instancia1_G3.txt
+========================================
+num_candidates: 5917
+num_schools: 20
+num_rooms: 197
+num_exam_types: 6
+total_capacity: 6324
+capacity_surplus: 407
+capacity_surplus_ratio: 0.06878485719114416
+mean_room_capacity: 32.101522842639596
+min_room_capacity: 10
+max_room_capacity: 174
+candidates_per_exam: {'M1': 960, 'M2': 991, 'M3d': 1020, 'M3e': 985, 'M3h': 996, 'M3s': 965}
+largest_exam_demand: 1020
+smallest_exam_demand: 960
+mean_distance: 0.20493253468818656
+median_distance: 0.058877
+std_distance: 0.37914264958404287
+min_distance: 0.0
+max_distance: 1.957532
+mean_nearest_school_distance: 0.1574460757140443
+median_nearest_school_distance: 0.006688
+max_nearest_school_distance: 1.839364
+
+========================================
+Instancia1_G4.txt
+========================================
+num_candidates: 3995
+num_schools: 12
+num_rooms: 145
+num_exam_types: 6
+total_capacity: 4700
+capacity_surplus: 705
+capacity_surplus_ratio: 0.17647058823529413
+mean_room_capacity: 32.41379310344828
+min_room_capacity: 20
+max_room_capacity: 50
+candidates_per_exam: {'M1': 679, 'M2': 679, 'M3d': 639, 'M3e': 679, 'M3h': 640, 'M3s': 679}
+largest_exam_demand: 679
+smallest_exam_demand: 639
+mean_distance: 4.656410705047977
+median_distance: 4.3980999999999995
+std_distance: 2.619589352488232
+min_distance: 0.0224
+max_distance: 12.8649
+mean_nearest_school_distance: 1.2789997246558198
+median_nearest_school_distance: 0.9534
+max_nearest_school_distance: 4.5554
+
+========================================
+Instancia1_G5.txt
+========================================
+num_candidates: 4213
+num_schools: 15
+num_rooms: 117
+num_exam_types: 6
+total_capacity: 4664
+capacity_surplus: 451
+capacity_surplus_ratio: 0.10704960835509138
+mean_room_capacity: 39.863247863247864
+min_room_capacity: 30
+max_room_capacity: 50
+candidates_per_exam: {'M1': 680, 'M2': 679, 'M3d': 669, 'M3e': 740, 'M3h': 721, 'M3s': 724}
+largest_exam_demand: 740
+smallest_exam_demand: 669
+mean_distance: 5.7713141134583426
+median_distance: 5.5622
+std_distance: 2.9023713677491045
+min_distance: 0.0341
+max_distance: 14.407
+mean_nearest_school_distance: 1.4404572988369333
+median_nearest_school_distance: 1.3009
+max_nearest_school_distance: 4.657
+
+========================================
+Instancia1_G6.txt
+========================================
+num_candidates: 5203
+num_schools: 15
+num_rooms: 248
+num_exam_types: 6
+total_capacity: 5781
+capacity_surplus: 578
+capacity_surplus_ratio: 0.1110897559100519
+mean_room_capacity: 23.31048387096774
+min_room_capacity: 12
+max_room_capacity: 117
+candidates_per_exam: {'M1': 908, 'M2': 847, 'M3d': 893, 'M3e': 800, 'M3h': 885, 'M3s': 870}
+largest_exam_demand: 908
+smallest_exam_demand: 800
+mean_distance: 5.199385549362547
+median_distance: 5.002
+std_distance: 2.778646698116797
+min_distance: 0.0072
+max_distance: 13.9692
+mean_nearest_school_distance: 1.2796533730540074
+median_nearest_school_distance: 1.0853
+max_nearest_school_distance: 5.9769
+
+========================================
+Instancia1_G7.txt
+========================================
+num_candidates: 3357
+num_schools: 11
+num_rooms: 62
+num_exam_types: 6
+total_capacity: 3950
+capacity_surplus: 593
+capacity_surplus_ratio: 0.17664581471551982
+mean_room_capacity: 63.70967741935484
+min_room_capacity: 20
+max_room_capacity: 100
+candidates_per_exam: {'M1': 395, 'M2': 893, 'M3d': 501, 'M3e': 348, 'M3h': 595, 'M3s': 625}
+largest_exam_demand: 893
+smallest_exam_demand: 348
+mean_distance: 10.921146586508517
+median_distance: 7.18
+std_distance: 9.539265730387244
+min_distance: 0.0
+max_distance: 54.14
+mean_nearest_school_distance: 3.0571045576407507
+median_nearest_school_distance: 1.64
+max_nearest_school_distance: 25.82
+
+========================================
+Instancia1_G9.txt
+========================================
+num_candidates: 3696
+num_schools: 14
+num_rooms: 150
+num_exam_types: 6
+total_capacity: 4350
+capacity_surplus: 654
+capacity_surplus_ratio: 0.17694805194805194
+mean_room_capacity: 29.0
+min_room_capacity: 20
+max_room_capacity: 35
+candidates_per_exam: {'M1': 1079, 'M2': 926, 'M3d': 212, 'M3e': 544, 'M3h': 425, 'M3s': 510}
+largest_exam_demand: 1079
+smallest_exam_demand: 212
+mean_distance: 5.124810654375387
+median_distance: 3.78905
+std_distance: 4.341358370209309
+min_distance: 0.1318
+max_distance: 23.7531
+mean_nearest_school_distance: 1.1613685606060606
+median_nearest_school_distance: 0.95495
+max_nearest_school_distance: 6.9182
+
+========================================
+Instancia2_G1.txt
+========================================
+num_candidates: 4442
+num_schools: 15
+num_rooms: 157
+num_exam_types: 6
+total_capacity: 5260
+capacity_surplus: 818
+capacity_surplus_ratio: 0.18415128320576318
+mean_room_capacity: 33.503184713375795
+min_room_capacity: 15
+max_room_capacity: 55
+candidates_per_exam: {'M1': 1725, 'M2': 1444, 'M3d': 218, 'M3e': 388, 'M3h': 453, 'M3s': 214}
+largest_exam_demand: 1725
+smallest_exam_demand: 214
+mean_distance: 6.069015045775177
+median_distance: 5.64875
+std_distance: 3.3484203326517066
+min_distance: 0.0095
+max_distance: 19.7188
+mean_nearest_school_distance: 1.9035911076091852
+median_nearest_school_distance: 1.3554
+max_nearest_school_distance: 11.2019
+
+========================================
+Instancia2_G10.txt
+========================================
+num_candidates: 5116
+num_schools: 15
+num_rooms: 101
+num_exam_types: 6
+total_capacity: 5224
+capacity_surplus: 108
+capacity_surplus_ratio: 0.02111024237685692
+mean_room_capacity: 51.722772277227726
+min_room_capacity: 17
+max_room_capacity: 119
+candidates_per_exam: {'M1': 881, 'M2': 712, 'M3d': 950, 'M3e': 698, 'M3h': 964, 'M3s': 911}
+largest_exam_demand: 964
+smallest_exam_demand: 698
+mean_distance: 4.08825087698723
+median_distance: 3.8964499999999997
+std_distance: 2.4145995324563727
+min_distance: 0.0058
+max_distance: 12.7875
+mean_nearest_school_distance: 0.7806013291634089
+median_nearest_school_distance: 0.5231
+max_nearest_school_distance: 2.5791
+
+========================================
+Instancia2_G11.txt
+========================================
+num_candidates: 4454
+num_schools: 15
+num_rooms: 122
+num_exam_types: 6
+total_capacity: 5497
+capacity_surplus: 1043
+capacity_surplus_ratio: 0.23417153120790302
+mean_room_capacity: 45.057377049180324
+min_room_capacity: 30
+max_room_capacity: 60
+candidates_per_exam: {'M1': 868, 'M2': 678, 'M3d': 279, 'M3e': 1264, 'M3h': 540, 'M3s': 825}
+largest_exam_demand: 1264
+smallest_exam_demand: 279
+mean_distance: 24.372822093997904
+median_distance: 26.573549999999997
+std_distance: 6.728091536684615
+min_distance: 4.1128
+max_distance: 36.3942
+mean_nearest_school_distance: 9.360864885496184
+median_nearest_school_distance: 9.5077
+max_nearest_school_distance: 14.2943
+
+========================================
+Instancia2_G12.txt
+========================================
+num_candidates: 3860
+num_schools: 15
+num_rooms: 205
+num_exam_types: 6
+total_capacity: 4485
+capacity_surplus: 625
+capacity_surplus_ratio: 0.16191709844559585
+mean_room_capacity: 21.878048780487806
+min_room_capacity: 15
+max_room_capacity: 45
+candidates_per_exam: {'M1': 1112, 'M2': 492, 'M3d': 669, 'M3e': 751, 'M3h': 432, 'M3s': 404}
+largest_exam_demand: 1112
+smallest_exam_demand: 404
+mean_distance: 28.141650077720207
+median_distance: 28.11575
+std_distance: 4.156376193227104
+min_distance: 16.3373
+max_distance: 40.2626
+mean_nearest_school_distance: 21.701418238341972
+median_nearest_school_distance: 21.7317
+max_nearest_school_distance: 26.652
+
+========================================
+Instancia2_G2.txt
+========================================
+num_candidates: 109
+num_schools: 5
+num_rooms: 12
+num_exam_types: 6
+total_capacity: 121
+capacity_surplus: 12
+capacity_surplus_ratio: 0.11009174311926606
+mean_room_capacity: 10.083333333333334
+min_room_capacity: 4
+max_room_capacity: 16
+candidates_per_exam: {'M1': 28, 'M2': 27, 'M3d': 13, 'M3e': 14, 'M3h': 14, 'M3s': 13}
+largest_exam_demand: 28
+smallest_exam_demand: 13
+mean_distance: 9.760984770642203
+median_distance: 11.72
+std_distance: 5.7531316948463065
+min_distance: 0.2209
+max_distance: 19.1111
+mean_nearest_school_distance: 6.96955137614679
+median_nearest_school_distance: 11.4343
+max_nearest_school_distance: 13.9476
+
+========================================
+Instancia2_G3.txt
+========================================
+num_candidates: 3858
+num_schools: 10
+num_rooms: 97
+num_exam_types: 6
+total_capacity: 4612
+capacity_surplus: 754
+capacity_surplus_ratio: 0.19543805080352514
+mean_room_capacity: 47.54639175257732
+min_room_capacity: 10
+max_room_capacity: 175
+candidates_per_exam: {'M1': 643, 'M2': 662, 'M3d': 639, 'M3e': 685, 'M3h': 585, 'M3s': 644}
+largest_exam_demand: 685
+smallest_exam_demand: 585
+mean_distance: 0.20672765559875583
+median_distance: 0.074114
+std_distance: 0.37630551392331374
+min_distance: 0.0
+max_distance: 1.958666
+mean_nearest_school_distance: 0.16023959616381545
+median_nearest_school_distance: 0.006867
+max_nearest_school_distance: 1.839364
+
+========================================
+Instancia2_G4.txt
+========================================
+num_candidates: 3970
+num_schools: 12
+num_rooms: 142
+num_exam_types: 6
+total_capacity: 4670
+capacity_surplus: 700
+capacity_surplus_ratio: 0.17632241813602015
+mean_room_capacity: 32.88732394366197
+min_room_capacity: 20
+max_room_capacity: 50
+candidates_per_exam: {'M1': 675, 'M2': 675, 'M3d': 635, 'M3e': 675, 'M3h': 635, 'M3s': 675}
+largest_exam_demand: 675
+smallest_exam_demand: 635
+mean_distance: 4.917631683459279
+median_distance: 4.8399
+std_distance: 2.771459843286638
+min_distance: 0.0044
+max_distance: 12.3466
+mean_nearest_school_distance: 0.999722871536524
+median_nearest_school_distance: 0.893
+max_nearest_school_distance: 2.7785
+
+========================================
+Instancia2_G5.txt
+========================================
+num_candidates: 4628
+num_schools: 15
+num_rooms: 125
+num_exam_types: 6
+total_capacity: 5003
+capacity_surplus: 375
+capacity_surplus_ratio: 0.081028522039758
+mean_room_capacity: 40.024
+min_room_capacity: 30
+max_room_capacity: 50
+candidates_per_exam: {'M1': 781, 'M2': 767, 'M3d': 777, 'M3e': 770, 'M3h': 773, 'M3s': 760}
+largest_exam_demand: 781
+smallest_exam_demand: 760
+mean_distance: 3.9297885047536734
+median_distance: 3.7418
+std_distance: 1.776737912465305
+min_distance: 0.0222
+max_distance: 10.5106
+mean_nearest_school_distance: 1.1661363439930856
+median_nearest_school_distance: 1.1992500000000001
+max_nearest_school_distance: 2.524
+
+========================================
+Instancia2_G6.txt
+========================================
+num_candidates: 4809
+num_schools: 15
+num_rooms: 177
+num_exam_types: 6
+total_capacity: 5171
+capacity_surplus: 362
+capacity_surplus_ratio: 0.07527552505718445
+mean_room_capacity: 29.214689265536723
+min_room_capacity: 14
+max_room_capacity: 62
+candidates_per_exam: {'M1': 797, 'M2': 832, 'M3d': 817, 'M3e': 787, 'M3h': 791, 'M3s': 785}
+largest_exam_demand: 832
+smallest_exam_demand: 785
+mean_distance: 7.992309229916129
+median_distance: 5.7784
+std_distance: 12.004866206207593
+min_distance: 0.0181
+max_distance: 75.2452
+mean_nearest_school_distance: 3.4627063838635888
+median_nearest_school_distance: 1.202
+max_nearest_school_distance: 66.7946
+
+========================================
+Instancia2_G7.txt
+========================================
+num_candidates: 6798
+num_schools: 20
+num_rooms: 113
+num_exam_types: 6
+total_capacity: 6940
+capacity_surplus: 142
+capacity_surplus_ratio: 0.020888496616651958
+mean_room_capacity: 61.415929203539825
+min_room_capacity: 20
+max_room_capacity: 100
+candidates_per_exam: {'M1': 2405, 'M2': 2141, 'M3d': 367, 'M3e': 999, 'M3h': 318, 'M3s': 568}
+largest_exam_demand: 2405
+smallest_exam_demand: 318
+mean_distance: 13.622958590761991
+median_distance: 13.4
+std_distance: 5.5236791266772585
+min_distance: 0.05
+max_distance: 31.35
+mean_nearest_school_distance: 4.172444836716681
+median_nearest_school_distance: 4.1
+max_nearest_school_distance: 8.2
+
+========================================
+Instancia2_G9.txt
+========================================
+num_candidates: 4124
+num_schools: 14
+num_rooms: 150
+num_exam_types: 6
+total_capacity: 4350
+capacity_surplus: 226
+capacity_surplus_ratio: 0.0548011639185257
+mean_room_capacity: 29.0
+min_room_capacity: 20
+max_room_capacity: 35
+candidates_per_exam: {'M1': 1283, 'M2': 1175, 'M3d': 225, 'M3e': 548, 'M3h': 263, 'M3s': 630}
+largest_exam_demand: 1283
+smallest_exam_demand: 225
+mean_distance: 6.18103205452404
+median_distance: 4.5816
+std_distance: 4.776569037415973
+min_distance: 0.1263
+max_distance: 24.8223
+mean_nearest_school_distance: 1.5750989330746847
+median_nearest_school_distance: 1.29285
+max_nearest_school_distance: 8.3149
+
+========================================
+instancia1_G13.txt
+========================================
+num_candidates: 360
+num_schools: 14
+num_rooms: 43
+num_exam_types: 6
+total_capacity: 415
+capacity_surplus: 55
+capacity_surplus_ratio: 0.1527777777777778
+mean_room_capacity: 9.651162790697674
+min_room_capacity: 4
+max_room_capacity: 16
+candidates_per_exam: {'M1': 19, 'M2': 76, 'M3d': 21, 'M3e': 76, 'M3h': 118, 'M3s': 50}
+largest_exam_demand: 118
+smallest_exam_demand: 19
+mean_distance: 6.291782817460318
+median_distance: 6.0644
+std_distance: 2.967952552439834
+min_distance: 0.1675
+max_distance: 14.7299
+mean_nearest_school_distance: 1.7434755555555557
+median_nearest_school_distance: 1.74435
+max_nearest_school_distance: 3.5721
+
+========================================
+instancia1_G14.txt
+========================================
+num_candidates: 370
+num_schools: 12
+num_rooms: 39
+num_exam_types: 6
+total_capacity: 432
+capacity_surplus: 62
+capacity_surplus_ratio: 0.16756756756756758
+mean_room_capacity: 11.076923076923077
+min_room_capacity: 4
+max_room_capacity: 16
+candidates_per_exam: {'M1': 53, 'M2': 66, 'M3d': 62, 'M3e': 74, 'M3h': 60, 'M3s': 55}
+largest_exam_demand: 74
+smallest_exam_demand: 53
+mean_distance: 5.884293288288288
+median_distance: 5.4746500000000005
+std_distance: 3.0002394410970625
+min_distance: 0.142
+max_distance: 14.7569
+mean_nearest_school_distance: 2.0194975675675675
+median_nearest_school_distance: 1.6116000000000001
+max_nearest_school_distance: 5.9466
+
+========================================
+instancia1_G8.txt
+========================================
+num_candidates: 316
+num_schools: 12
+num_rooms: 24
+num_exam_types: 6
+total_capacity: 372
+capacity_surplus: 56
+capacity_surplus_ratio: 0.17721518987341772
+mean_room_capacity: 15.5
+min_room_capacity: 15
+max_room_capacity: 16
+candidates_per_exam: {'M1': 53, 'M2': 53, 'M3d': 52, 'M3e': 53, 'M3h': 52, 'M3s': 53}
+largest_exam_demand: 53
+smallest_exam_demand: 52
+mean_distance: 5.909087842827004
+median_distance: 5.70315
+std_distance: 2.8890968699095008
+min_distance: 0.0418
+max_distance: 14.483
+mean_nearest_school_distance: 1.71245917721519
+median_nearest_school_distance: 1.5510000000000002
+max_nearest_school_distance: 4.4692
+
+========================================
+instancia2_G13.txt
+========================================
+num_candidates: 382
+num_schools: 16
+num_rooms: 44
+num_exam_types: 6
+total_capacity: 411
+capacity_surplus: 29
+capacity_surplus_ratio: 0.07591623036649214
+mean_room_capacity: 9.340909090909092
+min_room_capacity: 4
+max_room_capacity: 16
+candidates_per_exam: {'M1': 217, 'M2': 37, 'M3d': 19, 'M3e': 83, 'M3h': 18, 'M3s': 8}
+largest_exam_demand: 217
+smallest_exam_demand: 8
+mean_distance: 6.1402517833769625
+median_distance: 5.9307
+std_distance: 2.946632430183545
+min_distance: 0.0886
+max_distance: 15.1584
+mean_nearest_school_distance: 1.531278272251309
+median_nearest_school_distance: 1.62375
+max_nearest_school_distance: 2.9883
+
+========================================
+instancia2_G14.txt
+========================================
+num_candidates: 362
+num_schools: 12
+num_rooms: 39
+num_exam_types: 6
+total_capacity: 383
+capacity_surplus: 21
+capacity_surplus_ratio: 0.058011049723756904
+mean_room_capacity: 9.820512820512821
+min_room_capacity: 4
+max_room_capacity: 16
+candidates_per_exam: {'M1': 107, 'M2': 83, 'M3d': 33, 'M3e': 69, 'M3h': 28, 'M3s': 42}
+largest_exam_demand: 107
+smallest_exam_demand: 28
+mean_distance: 7.666981606813996
+median_distance: 7.397
+std_distance: 2.7432234900140586
+min_distance: 0.3639
+max_distance: 14.6523
+mean_nearest_school_distance: 2.8509657458563535
+median_nearest_school_distance: 2.9532
+max_nearest_school_distance: 4.8461
+
+========================================
+instancia2_G8.txt
+========================================
+num_candidates: 316
+num_schools: 12
+num_rooms: 24
+num_exam_types: 6
+total_capacity: 372
+capacity_surplus: 56
+capacity_surplus_ratio: 0.17721518987341772
+mean_room_capacity: 15.5
+min_room_capacity: 15
+max_room_capacity: 16
+candidates_per_exam: {'M1': 53, 'M2': 53, 'M3d': 52, 'M3e': 53, 'M3h': 52, 'M3s': 53}
+largest_exam_demand: 53
+smallest_exam_demand: 52
+mean_distance: 4.175447521097046
+median_distance: 4.27395
+std_distance: 3.0867654445703243
+min_distance: 0.0175
+max_distance: 10.5342
+mean_nearest_school_distance: 0.3288715189873418
+median_nearest_school_distance: 0.2886
+max_nearest_school_distance: 1.4056

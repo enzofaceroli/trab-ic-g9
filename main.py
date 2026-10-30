@@ -37,7 +37,7 @@ def get_closest_candidates(exam_type, school_id, room_capacity, candidates_df, d
         .tolist()
     )
 
-def initial_solution(candidates_df, schools_df, distances_df):
+def initial_solution(candidates_df, schools_df, distances_df, instance_name):
     allocated_candidates = set()
     allocation = []
     total_distance = 0
@@ -99,7 +99,43 @@ def initial_solution(candidates_df, schools_df, distances_df):
         rooms_matrix[school_idx][room_id] = 0
         
     if len(allocated_candidates) != len(candidates_df):
-        print(f"No valid solution found. {len(allocated_candidates)}/{len(candidates_df)} candidates allocated. Total Distance: {total_distance}\n")
+        missing_candidates = candidates_df.loc[
+            ~candidates_df.index.isin(allocated_candidates)
+        ]
+
+        allocated_count = len(allocated_candidates)
+        missing_count = len(missing_candidates)
+        total_count = len(candidates_df)
+
+        summary = pd.DataFrame({
+            "Demanda": candidates_df["tipo_prova"].value_counts(),
+            "Alocados": candidates_df.loc[
+                candidates_df.index.isin(allocated_candidates), "tipo_prova"
+            ].value_counts(),
+            "Não alocados": missing_candidates["tipo_prova"].value_counts()
+        }).fillna(0).astype(int)
+
+        summary["% não alocados"] = (
+            100 * summary["Não alocados"] / summary["Demanda"]
+        )
+
+        with open("failed_instances.txt", "a", encoding="utf-8") as f:
+            f.write(f"INSTÂNCIA: {instance_name}\n")
+
+            f.write(f"Candidatos: {total_count}\n")
+            f.write(f"Alocados: {allocated_count}\n")
+            f.write(f"Não alocados: {missing_count} ({missing_count / total_count:.2%})\n")
+            f.write(f"Distância total: {total_distance:.4f}\n\n")
+
+            f.write("Distribuição por tipo de prova:\n")
+            f.write(summary.to_string(float_format=lambda x: f"{x:.2f}"))
+            f.write("\n\nCandidatos não alocados:\n")
+
+            for exam_type, group in missing_candidates.groupby("tipo_prova"):
+                f.write(f"{exam_type}: {list(group.index)}\n")
+
+            f.write("\n")
+
         return None
     
     allocation_df = pd.DataFrame(allocation)
@@ -354,9 +390,6 @@ def local_search(allocation_df, candidates_df, schools_df, distances_df):
     print(f"Distância final: {actual_distance:.4f}")
 
     return allocation_df
-
-
-
             
 def total_distance(allocation_df, distances_df):
     return sum(
@@ -364,9 +397,14 @@ def total_distance(allocation_df, distances_df):
         for row in allocation_df.itertuples()
     )         
     
+import time
+
 def main():
     with open("results.txt", "w", encoding="utf-8") as log:
-        log.write("Instância | Distância inicial | Distância local search\n")
+        log.write(
+            "Instância | Distância inicial | Tempo heurística (s) | "
+            "Distância local search | Tempo local search (s)\n"
+        )
 
         for file in sorted(INSTANCES_PATH.glob("*.txt")):
             (
@@ -377,33 +415,40 @@ def main():
                 distances_df,
             ) = load_instance(file)
 
+            start = time.perf_counter()
             allocation_df = initial_solution(
-                candidates_df, schools_df, distances_df
+                candidates_df, schools_df, distances_df, file.name
             )
+            initial_time = time.perf_counter() - start
 
-            if allocation_df is not None:
-                initial_distance = total_distance(
-                    allocation_df, distances_df
-                )
+            # if allocation_df is not None:
+            #     initial_distance = total_distance(
+            #         allocation_df, distances_df
+            #     )
 
-                local_search_df = local_search(
-                    allocation_df, candidates_df, schools_df, distances_df
-                )
+            #     start = time.perf_counter()
+            #     local_search_df = local_search(
+            #         allocation_df, candidates_df, schools_df, distances_df
+            #     )
+            #     local_search_time = time.perf_counter() - start
 
-                local_search_distance = total_distance(
-                    local_search_df, distances_df
-                )
+            #     local_search_distance = total_distance(
+            #         local_search_df, distances_df
+            #     )
 
-                log.write(
-                    f"{file.name} | {initial_distance:.4f} | "
-                    f"{local_search_distance:.4f}\n"
-                )
-                log.flush()
+            #     log.write(
+            #         f"{file.name} | {initial_distance:.4f} | "
+            #         f"{initial_time:.4f} | {local_search_distance:.4f} | "
+            #         f"{local_search_time:.4f}\n"
+            #     )
+            #     log.flush()
 
-                print(
-                    f"{file.name}: inicial = {initial_distance:.4f} | "
-                    f"local search = {local_search_distance:.4f}"
-                )
+            #     print(
+            #         f"{file.name}: inicial = {initial_distance:.4f} "
+            #         f"({initial_time:.4f}s) | "
+            #         f"local search = {local_search_distance:.4f} "
+            #         f"({local_search_time:.4f}s)"
+            #     )
                 
                     
 if __name__ == "__main__":
